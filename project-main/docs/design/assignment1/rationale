@@ -1,0 +1,153 @@
+REQ1:
+In the REQ1 diagram, LargeBolt class and MetalSheet class extends the abstract class Item.
+Application class dependent on it, as we add them to the game map through Application class.
+In the REQ1, my goal is to implement two scraps LargeBolt and MetalSheet
+that can be picked up and dropped off by the Player.
+In the game engine, Location class and Actor class have association with the abstract Item class,
+all portable Item can be picked up and dropped off by a Player,
+so these two "scraps" extends the abstract item class and be portable.
+When we add them in the specific location through the Application class,
+it can be picked up by Player.
+After picking up, when it in the Player's inventory, a portable Item can be dropped off.
+then we can achieve the goal.
+As the game Engine obey the Open-Close principle and Liskov Substitution Principle, so I design it like this.
+Besides, a Intern class which extends abstract class Player.
+As Intern is a main Player character in this game, which has 4 hp and do not have any abilities.
+It just represent a intern in the game.
+Player will not be initialized, as it is a abstract concept. To do that, if a new player character is created in the game,
+it can extends player and share the same functionality, which is can be controlled by the user interface to perform some action.
+This obey the DRY principle.
+The Intern instance can be added to the game through Application class in a location of the game map.
+
+However, application should depend on the MetalSheet class and LargeBolt class directly, and when a new
+scrap is added, new dependency is added, the system will have large amounts of dependency.
+
+
+REQ2:
+In the REQ2 diagram,
+A new abstract class Plant is created and extends Ground.
+It is a abstract concept and each plant have chance to drop its fruit every turn in the game.
+Inheritree class and LargeInheritree class extends Plant class.
+Inheritree has Fruit SmallFruit, and LargeInheritree has LargeFruit.
+When a new stage of tree or the other type of tree is added into the game,
+they can directly extends the Plant class and share the same functionality.
+The transformation can be implemented in the tick method without changing game engine,
+it obey the Open-close principle and Don't Repeat Yourself principle
+
+The other abstract class Fruit is created which extends Item,
+it also is a abstract concept, but every fruit is portable Item which can be picked up and dropped off by a actor.
+This class represent a fruit item and will be dropped by a plant in the game.
+LargeFruit class and SmallFruit class extends Fruit, represent the instance of Fruit which can be dropped by its
+Tree in the current game.
+LargeFruit and SmallFruit share similar functionality,
+so they extend abstract class Fruit can meet the Don't repeat yourself principle.
+
+In this requirement, my goal is to implement trees which can grow in the game map and produce fruit,
+fruit can be picked and dropped.
+As FancyGroundFactory implement the interface GroundFactory which depends on the Ground class,
+so the Plant is implemented by extending the ground, then the Application can create
+a new FancyGroundFactory to let the game gap can create any Plant.
+As Liskov Substitution Principle, Ground can be added in the game map through FancyGroundFactory.
+Besides, Ground can tick in every turn, so Plant have chance to produce Fruit in every turn in tick.
+After 5 time the small Inheritree can be transformed to LargeInheritree, that achieve goals.
+Application class only have dependency on the small Inheritree, as it will transform inside the inheritree tick method.
+This can minimize the dependency of this programme.
+
+The disadvantage of this design is that multi-level inherit, as each instance is the child of child of abstract class,
+which is hard to located and fix bug.
+
+
+REQ3:
+In the requirement, my goal is to implement a Crater class which have chance to create
+creature every turn.
+
+In the REQ3 diagram,
+new Ground Crater class, new Behaviour AttackBehaviour class, a Spawner and HuntsmanSpawner for the
+Crater are created in this requirement.
+
+Crater class represent a crater in the game and it is a terrain which is similar to a Inheritree.
+However each crater in the game map have chance to create a creature in every turn.
+
+To achieve that, an abstract class Spawner is implemented.
+A Crater can have exactly one Spawner in this design, and each spawner can spawn a creature,
+like SpiderSpawner can spawn a HuntsmanSpider.
+This design can be easily extends, as the Crater depends on the interface Spawner.
+if a creature is added and can be spawned by a crater, then we can create a
+new Spawner class for this creature extends Spawner and create a new Crater with this Spawner without changing Crater class.
+This obey Open-close Principle.
+
+A Crater can be added to the game map through the Application class, and through the game engine, each turn
+all Ground in the game map should tick, the crater's Spawner have chance to spawn creature through the tick,
+and the SpiderSpawner should spawn a mew HuntsmanSpider in 5% every turn, this achieve the goal.
+
+Besides, This requirement should let HuntsmanSpider will attack the nearby hostile creature.
+AttackBehaviour class implements interface Behaviour, and represent a behaviour of an actor.
+As an NPC actor can have several behaviour, when it is this NPC actor's turn,
+behaviour will help it to decide the action.
+AttackBehaviour class will return a new AttackAction if a hostile creature nearby.
+So a new dependency between HuntsmanSpider class and AttackBehaviour class
+can help HuntsmanSpider return a new AttackAction, and let it attack the player.
+This design can be easily extended,
+in the AttackBehaviour class, the return action rely on whether the actor have status
+"HOSTILE_TO_ENEMY", so when we added a new creature which is hostile to HuntsmanSpider,
+we can just add the status to the creature without modifying the AttackBehaviour class.
+And if there is another creature who is hostile to player, then we can add the AttackBehaviour to this creature with a
+high priority.
+When a player nearby, AttackBehaviour will return a AttackAction for it.
+It follow the Open-Close principle.
+
+The game will works like,
+when a HuntsmanSpider is created in the game map, it has AttackBehaviour, for every turn of HuntsmanSpider,
+this AttackBehaviour will check whether a hostile creature nearby, if yes, an AttackAction to hostile creature
+will be performed by the HuntsmanSpider, which meet the requirement.
+
+The disadvantage of this design is, when more and more actor is created, if a NPC actor is hostile to both HuntsmanSpider
+and player, the AttackBehaviour can not match that.
+
+
+
+REQ4:
+In the REQ4 diagram,
+The design goal is create a new MetalPipe item can be picked and dropped, besides, if a actor hold it in inventory
+it can be used to attack surrounding hostile creature.
+And let fruit can be consumed when it is in the inventory of player.
+
+ConsumeAction class is created，MetalPipe which is a scraps is created，a interface ConsumableItem is created.
+
+So MetalPipe represent a MetalPipe WeaponItem in the game,
+it extends WeaponItem abstract class, as WeaponItem is a item can be used as a weapon.
+In the game engine, all items in the player inventory will provide a list of action.
+As Liskov Substitution Principle, MetalPipe class extends WeaponItem extends Item,
+MetalPipe can provide action to player every turn when it in inventory, which is attack the surround enemy.
+we can add MetalPipe into specific Location through Application, and as it extends Item, it can be picked up by a player.
+In addition, it extends WeaponItem, it can be used as a weapon, when a actor hold it,
+and when there is a hostile creature in it surrounding, it will return an AttackAction with itself.
+That achieve the goal of MetalPipe.
+
+ConsumableItem is a interface, every item implements it can be consumed by a player.
+Then we let Fruit class implement the ConsumableItem, as SmallFruit and LargeFruit inherit Fruit, they becomes ConsumableItem.
+
+ConsumeAction is an action can be act by an actor when a ConsumableItem in his inventory.
+The ConsumeAction class extends abstract class Action,
+as Item depends on ActionList and ActionList is associated with Action, so ConsumeAction can be contains in a
+ActionList, and each item can provide an action list to the player.
+Then, the Fruit can return a ConsumeAction to the actor when it is in the inventory to achieve that Fruit can be consumed
+by player.
+
+This design can be easily extends,
+as ConsumeAction depends on the ConsumableItem, when there is another Item which is consumable and provide other
+status to the actor. This Item can implement ConsumableItem interface and return itself as a ConsumeAction to the play,
+and ConsumeAction do not need to change, it follow the Open-Close Principle.
+
+
+
+
+
+
+
+
+
+
+
+
+
